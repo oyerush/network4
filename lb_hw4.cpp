@@ -23,7 +23,7 @@ int servers_connection(int **fds)
     {
         int sock = 0, valread, client_fd;
         struct sockaddr_in serv_addr;
-        if ((sock = socket(AF_INET, SOCK_STREAM, SOCK_NONBLOCK)) < 0)
+        if ((sock = socket(AF_INET, SOCK_STREAM | SOCK_NONBLOCK, 0)) < 0)
         {
             printf("\n Socket creation error \n");
             return -1;
@@ -50,7 +50,7 @@ int clients_connection(int *fd, struct sockaddr_in *fd_address)
     struct sockaddr_in address;
     int opt = 1;
     // Creating socket file descriptor
-    if ((server_fd = socket(AF_INET, SOCK_STREAM, SOCK_NONBLOCK)) == 0)
+    if ((server_fd = socket(AF_INET, SOCK_STREAM | SOCK_NONBLOCK, 0)) == 0)
     {
         printf("socket failed");
         return -1;
