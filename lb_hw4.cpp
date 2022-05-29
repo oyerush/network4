@@ -180,7 +180,7 @@ void queue_scheduler(int *changed)
     while ((changed[0] || changed[1]) && !finish)
     {
         finish = 1;
-        for (auto it = tasks_queue.begin(); it != tasks_queue.end(); it++)
+        for (std::list<struct task>::iterator it = tasks_queue.begin(); it != tasks_queue.end(); it++)
         {
             // search for the first not music task
             if (it->buf[0] != 'M')
@@ -204,7 +204,7 @@ void queue_scheduler(int *changed)
     while (changed[2])
     {
         finish = 1;
-        for (auto it = tasks_queue.begin(); it != tasks_queue.end(); it++)
+        for (std::list<struct task>::iterator it = tasks_queue.begin(); it != tasks_queue.end(); it++)
         {
             // search for the first not music task
             if (it->buf[0] == 'M')
@@ -224,7 +224,7 @@ void queue_scheduler(int *changed)
             }
         }
     }
-    for (auto it = tasks_queue.begin(); it != tasks_queue.end(); it++)
+    for (std::list<struct task>::iterator it = tasks_queue.begin(); it != tasks_queue.end(); it++)
     {
         int server_num;
         if ((server_num = scheduler(it->buf)) < 0)
