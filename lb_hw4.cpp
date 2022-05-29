@@ -11,7 +11,7 @@
 #define NUM_OF_SERVERS 3
 
 
-int servers_connection(int **fds)
+int servers_connection(int *fds)
 {
     char * address[] = 
     { 
@@ -35,7 +35,7 @@ int servers_connection(int **fds)
             printf("\nInvalid address/ Address not supported \n");
             return -1;
         }
-        if (((*fds)[i] = connect(sock, (struct sockaddr *)&serv_addr, sizeof(serv_addr))) < 0)
+        if ((fds[i] = connect(sock, (struct sockaddr *)&serv_addr, sizeof(serv_addr))) < 0)
         {
             printf("\nConnection Failed \n");
             return -1;
@@ -44,7 +44,7 @@ int servers_connection(int **fds)
     return 0;
 }
 
-int clients_connection(int *fd, struct sockaddr_in *fd_address)
+int clients_connection(int &fd, struct sockaddr_in &fd_address)
 {
     int server_fd, new_socket, valread;
     struct sockaddr_in address;
@@ -76,8 +76,8 @@ int clients_connection(int *fd, struct sockaddr_in *fd_address)
         printf("listen");
         return -1;
     }
-    *fd = server_fd;
-    *fd_address = address;
+    fd = server_fd;
+    fd_address = address;
     return 0;
 }
 
@@ -290,17 +290,17 @@ int lb(int *servers_fds, int lb_fd, struct sockaddr_in fd_address)
 
 int main()
 {
-    int servers_fds[3];
+    int servers_fds[3] = {-1, -1, -1};
     int lb_fd;
     struct sockaddr_in fd_address;
     // set up the lb 
     // set up connection with servers
-    if (servers_connection((int **)&servers_fds) < 0)
+    if (servers_connection((int *)servers_fds) < 0)
     {
         return -1;
     }
     // set up connection with clients
-    if (clients_connection((int *)&lb_fd, &fd_address) < 0)
+    if (clients_connection(lb_fd, fd_address) < 0)
     {
         return -1;
     }
