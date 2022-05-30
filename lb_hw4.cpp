@@ -7,6 +7,8 @@
 #include <unistd.h>
 #include <time.h>
 #include <list>
+#include <fcntl.h> /* Added for the nonblocking socket */
+
 #define PORT 80
 #define NUM_OF_SERVERS 3
 
@@ -23,7 +25,7 @@ int servers_connection(int *fds)
     {
         int sock = 0, valread, client_fd;
         struct sockaddr_in serv_addr;
-        if ((sock = socket(AF_INET, SOCK_STREAM | SOCK_NONBLOCK, 0)) < 0)
+        if ((sock = socket(AF_INET, SOCK_STREAM, 0)) < 0)
         {
             printf("\n Socket creation error \n");
             return -1;
@@ -40,6 +42,7 @@ int servers_connection(int *fds)
             printf("\nConnection Failed \n");
             return -1;
         }
+        fcntl(fds[i], F_SETFL, O_NONBLOCK);
     }
     return 0;
 }
@@ -50,7 +53,7 @@ int clients_connection(int &fd, struct sockaddr_in &fd_address)
     struct sockaddr_in address;
     int opt = 1;
     // Creating socket file descriptor
-    if ((server_fd = socket(AF_INET, SOCK_STREAM | SOCK_NONBLOCK, 0)) == 0)
+    if ((server_fd = socket(AF_INET, SOCK_STREAM, 0)) == 0)
     {
         printf("socket failed");
         return -1;
@@ -77,6 +80,7 @@ int clients_connection(int &fd, struct sockaddr_in &fd_address)
         return -1;
     }
     fd = server_fd;
+    fcntl(fd, F_SETFL, O_NONBLOCK);
     fd_address = address;
     return 0;
 }
