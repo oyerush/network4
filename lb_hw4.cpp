@@ -13,7 +13,7 @@
 
 int servers_connection(int *fds)
 {
-    char * address[] = 
+    const char * address[] = 
     { 
         "192.168.0.101",
         "192.168.0.102",
@@ -304,4 +304,5 @@ int main()
     {
         return -1;
     }
+    lb(servers_fds, lb_fd, fd_address);
 }
