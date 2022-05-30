@@ -34,7 +34,9 @@ int servers_connection(int *fds)
         }
         serv_addr->sin_family = AF_INET;
         serv_addr->sin_port = htons(PORT);
-        if (inet_pton(AF_INET, address[i], serv_addr.sin_addr) <= 0)
+        struct in_addr *sin_addr;
+        *sin_addr = serv_addr->sin_addr;
+        if (inet_pton(AF_INET, address[i], sin_addr) <= 0)
         {
             printf("\nInvalid address/ Address not supported \n");
             return -1;
@@ -278,7 +280,7 @@ int lb(int *servers_fds, int lb_fd, struct sockaddr_in fd_address)
         {
             queue_scheduler(changed);
         }
-        if ((client_new_soc = accept(lb_fd, (struct sockaddr *)ptr_fd_address,
+        if ((client_new_soc = accept(lb_fd, (struct sockaddr *)ptr_fd_addr,
                                      (socklen_t *)addrlen)) < 0)
         {
             // if there is no client try to connect
