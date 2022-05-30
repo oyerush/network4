@@ -24,20 +24,22 @@ int servers_connection(int *fds)
     for (int i = 0; i < NUM_OF_SERVERS; i++)
     {
         int sock = 0, valread, client_fd;
-        struct sockaddr_in serv_addr;
+        struct sockaddr_in serv_addr1;
+        struct sockaddr_in *serv_addr;
+        *serv_addr = serv_addr1;
         if ((sock = socket(AF_INET, SOCK_STREAM, 0)) < 0)
         {
             printf("\n Socket creation error \n");
             return -1;
         }
-        serv_addr.sin_family = AF_INET;
-        serv_addr.sin_port = htons(PORT);
-        if (inet_pton(AF_INET, address[i], &serv_addr.sin_addr) <= 0)
+        serv_addr->sin_family = AF_INET;
+        serv_addr->sin_port = htons(PORT);
+        if (inet_pton(AF_INET, address[i], serv_addr.sin_addr) <= 0)
         {
             printf("\nInvalid address/ Address not supported \n");
             return -1;
         }
-        if ((fds[i] = connect(sock, (struct sockaddr *)&serv_addr, sizeof(serv_addr))) < 0)
+        if ((fds[i] = connect(sock, (struct sockaddr *)serv_addr, sizeof(serv_addr))) < 0)
         {
             printf("\nConnection Failed \n");
             return -1;
@@ -50,8 +52,11 @@ int servers_connection(int *fds)
 int clients_connection(int &fd, struct sockaddr_in &fd_address)
 {
     int server_fd, new_socket, valread;
-    struct sockaddr_in address;
-    int opt = 1;
+    struct sockaddr_in address1;
+    struct sockaddr_in *address;
+    *address = address1;
+    int *opt;
+    *opt = 1;
     // Creating socket file descriptor
     if ((server_fd = socket(AF_INET, SOCK_STREAM, 0)) == 0)
     {
@@ -59,17 +64,17 @@ int clients_connection(int &fd, struct sockaddr_in &fd_address)
         return -1;
     }
     if (setsockopt(server_fd, SOL_SOCKET,
-                   SO_REUSEADDR | SO_REUSEPORT, &opt,
-                   sizeof(opt)))
+                   SO_REUSEADDR | SO_REUSEPORT, opt,
+                   sizeof(*opt)))
     {
         printf("setsockopt");
         return -1;
     }
-    address.sin_family = AF_INET;
-    address.sin_addr.s_addr = INADDR_ANY;
-    address.sin_port = htons(PORT);
-    if (bind(server_fd, (struct sockaddr *)&address,
-             sizeof(address)) < 0)
+    address->sin_family = AF_INET;
+    address->sin_addr.s_addr = INADDR_ANY;
+    address->sin_port = htons(PORT);
+    if (bind(server_fd, (struct sockaddr *)address,
+             sizeof(*address)) < 0)
     {
         printf("bind failed");
         return -1;
@@ -81,7 +86,7 @@ int clients_connection(int &fd, struct sockaddr_in &fd_address)
     }
     fd = server_fd;
     fcntl(fd, F_SETFL, O_NONBLOCK);
-    fd_address = address;
+    fd_address = *address;
     return 0;
 }
 
@@ -247,7 +252,10 @@ void queue_scheduler(int *changed)
 int lb(int *servers_fds, int lb_fd, struct sockaddr_in fd_address)
 {
 
-    int addrlen = sizeof(fd_address);
+    int *addrlen;
+    *addrlen = sizeof(fd_address);
+    struct sockaddr_in *ptr_fd_addr;
+    *ptr_fd_addr = fd_address;
 
     while (1)
     {
@@ -270,8 +278,8 @@ int lb(int *servers_fds, int lb_fd, struct sockaddr_in fd_address)
         {
             queue_scheduler(changed);
         }
-        if ((client_new_soc = accept(lb_fd, (struct sockaddr *)&fd_address,
-                                     (socklen_t *)&addrlen)) < 0)
+        if ((client_new_soc = accept(lb_fd, (struct sockaddr *)ptr_fd_address,
+                                     (socklen_t *)addrlen)) < 0)
         {
             // if there is no client try to connect
             continue;
