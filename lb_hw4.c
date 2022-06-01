@@ -93,7 +93,7 @@ int clients_connection(int *fd, struct sockaddr_in *fd_address)
     return 0;
 }
 
-int server_to_client[3][2] = {{-1, -1}};
+int server_to_client[3][2] = {{-1, -1}, {-1, -1}, {-1, -1}};
 
 int scheduler(char *buffer)
 {
