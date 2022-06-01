@@ -38,7 +38,7 @@ int servers_connection(int *fds)
         }
         serv_addr->sin_family = AF_INET;
         serv_addr->sin_port = htons(PORT);
-        struct in_addr *sin_addr;
+        struct in_addr *sin_addr = (struct in_addr *)malloc(sizeof(struct in_addr));
         *sin_addr = serv_addr->sin_addr;
         if (inet_pton(AF_INET, address[i], sin_addr) <= 0)
         {
