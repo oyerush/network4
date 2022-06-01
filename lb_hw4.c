@@ -121,7 +121,7 @@ int scheduler(char *buffer)
             return 2;
         }
         // check if server3 time is less then the time to finish job
-        if (server3_ttr < buffer[1] - '0')
+        if (server3_ttr <= buffer[1] - '0')
         {
             // wait until server3 finish
             return 2;
@@ -134,12 +134,13 @@ int scheduler(char *buffer)
         {
             return 1;
         }
-        if (server3_ttr < (buffer[1] - '0') + server12_ttr)
+        if (server3_ttr <= (buffer[1] - '0') + server12_ttr)
         {
             // wait until server1/2 finish
             return 2;
         }
-        return -MIN(server12_ttr, server3_ttr);
+        return  -server12;
+        //return -MIN(server12_ttr, server3_ttr);
     }
     case 'V':
     {
@@ -154,7 +155,7 @@ int scheduler(char *buffer)
             return 1;
         }
         // check if server1/2 time is less then the time to finish job
-        if (server12_ttr < 2 * (buffer[1] - '0'))
+        if (server12_ttr <= 2 * (buffer[1] - '0'))
         {
             // wait until server1/2 finish
             printf("server12 %d\n", server12);
@@ -164,12 +165,13 @@ int scheduler(char *buffer)
         {
             return 2;
         }
-        if (server12_ttr < (buffer[1] - '0') + server3_ttr)
+        if (server12_ttr <= (buffer[1] - '0') + server3_ttr)
         {
             // wait until server1/2 finish
             return server12;
         }
-        return -MIN(server12_ttr, server3_ttr);
+        return -2;
+        //return -MIN(server12_ttr, server3_ttr);
     }
     case 'P':
     {
@@ -184,7 +186,7 @@ int scheduler(char *buffer)
             return 1;
         }
         // check if server1/2 time is less then the time to finish job
-        if (server12_ttr < (buffer[1] - '0'))
+        if (server12_ttr <= (buffer[1] - '0'))
         {
             // wait until server1/2 finish
             return server12;
@@ -198,7 +200,8 @@ int scheduler(char *buffer)
             // wait until server1/2 finish
             return server12;
         }
-        return -MIN(server12_ttr, server3_ttr);
+        return -2;
+        //return -MIN(server12_ttr, server3_ttr);
     }
         //        default:
         //            printf("req error");
@@ -217,11 +220,15 @@ void *client_handler(void *fd)
     int bytes_read = read(*((int *)fd), buffer, 1024);
     pthread_mutex_lock(&lock);
     int server_num;
-    while ((server_num = scheduler(buffer)) < 0)
+    if ((server_num = scheduler(buffer)) < 0)
     {
         pthread_mutex_unlock(&lock);
-        sleep(-server_num);
+        sleep(0.5);
         pthread_mutex_lock(&lock);
+        if ((server_num = scheduler(buffer)) < 0)
+        {
+            server_num = -server_num;
+        }
     }
     if (server_to_client[server_num] == -1)
     {
