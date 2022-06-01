@@ -153,6 +153,10 @@ int scheduler(char *buffer)
             // wait until server1/2 finish
             return -server12_ttr;
         }
+        if (server_to_client[2] == -1)
+        {
+            return 2;
+        }
         return -MIN(server12_ttr, server3_ttr);
     }
     case 'P':
@@ -172,6 +176,10 @@ int scheduler(char *buffer)
         {
             // wait until server1/2 finish
             return -server12_ttr;
+        }
+        if (server_to_client[2] == -1)
+        {
+            return 2;
         }
         return -MIN(server12_ttr, server3_ttr);
     }
