@@ -225,7 +225,7 @@ void *client_handler(void *fd)
     server_to_client[server_num][0] = buffer[1] - '0';
     server_to_client[server_num][1] = time(NULL);
     pthread_mutex_unlock(&lock);
-    printf("w %d\n", servers_fds[server_num]);
+    printf("w %d %d %d \n", servers_fds[0], servers_fds[1], servers_fds[2]);
     write(servers_fds[server_num], buffer, bytes_read);
     printf("r\n");
     bytes_read = read(servers_fds[server_num], buffer, 1024);
