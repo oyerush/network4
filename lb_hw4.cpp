@@ -231,7 +231,7 @@ int lb(int lb_fd, struct sockaddr_in fd_address)
     while (1)
     {
         char buffer[1024] = {0};
-        int *client_new_soc;
+        int *client_new_soc = (int *)malloc(sizeof(int));
         if ((*client_new_soc = accept(lb_fd, (struct sockaddr *)ptr_fd_addr,
                                      (socklen_t *)addrlen)) < 0)
         {
