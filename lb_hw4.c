@@ -113,7 +113,7 @@ int scheduler(char *buffer)
     {
     case 'M':
     {
-        printf("\nM\n");
+        printf("\nM - %d -\n", server_to_client[2][0]);
         // server3 is available
         if (server_to_client[2][0] == -1)
         {
@@ -126,7 +126,7 @@ int scheduler(char *buffer)
         // check if server3 time is less then the time to finish job
         if (server3_ttr < buffer[1] - '0')
         {
-            printf("\n-M-C-\n");
+            printf("\n-M-C %d-\n", server3_ttr);
             // wait until server3 finish
             return -server3_ttr;
         }
