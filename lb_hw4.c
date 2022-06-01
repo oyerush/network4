@@ -45,12 +45,13 @@ int servers_connection()
             return -1;
         }
 
-        if ((servers_fds[i] = connect(sock, (struct sockaddr *)&serv_addr,
+        if ((connect(sock, (struct sockaddr *)&serv_addr,
                                       sizeof(serv_addr))) < 0)
         {
             printf("\nConnection Failed \n");
             return -1;
         }
+        servers_fds[i] = sock;
     }
     return 0;
 }
@@ -237,6 +238,7 @@ void *client_handler(void *fd)
     pthread_mutex_unlock(&lock);
     printf("ul\n");
     write(*((int *)fd), buffer, bytes_read);    
+    close(*(int *)fd);
     return fd;
 }
 
