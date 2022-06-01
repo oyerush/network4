@@ -128,12 +128,12 @@ int scheduler(char *buffer)
             // wait until server3 finish
             return -server3_ttr;
         }
-        if (server_to_client[0] == -1 && !servers_occupied[0])
+        if (server_to_client[0] == -1) // && !servers_occupied[0])
         {
             servers_occupied[0] = 0;
             return 0;
         }
-        if (server_to_client[1] == -1 && !servers_occupied[1])
+        if (server_to_client[1] == -1) // && !servers_occupied[1])
         {
             servers_occupied[1] = 0;
             return 1;
@@ -161,7 +161,7 @@ int scheduler(char *buffer)
             servers_occupied[server12] = 1;
             return -server12_ttr;
         }
-        if (server_to_client[2] == -1 && !servers_occupied[2])
+        if (server_to_client[2] == -1)// && !servers_occupied[2])
         {
             servers_occupied[2] = 0;
             return 2;
@@ -189,7 +189,7 @@ int scheduler(char *buffer)
             servers_occupied[server12] = 1;
             return -server12_ttr;
         }
-        if (server_to_client[2] == -1 && !servers_occupied[2])
+        if (server_to_client[2] == -1) // && !servers_occupied[2])
         {
             servers_occupied[2] = 0;
             return 2;
@@ -225,7 +225,6 @@ void *client_handler(void *fd)
     bytes_read = read(servers_fds[server_num], buffer, 1024);
     write(*((int *)fd), buffer, bytes_read);    
     pthread_mutex_lock(&lock);
-    printf("l\n");
     server_to_client[server_num] = -1;
     pthread_mutex_unlock(&lock);
     close(*(int *)fd);
