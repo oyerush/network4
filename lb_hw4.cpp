@@ -230,8 +230,8 @@ void *client_handler(void *fd)
 int lb(int lb_fd, struct sockaddr_in fd_address)
 {
 
-    //int *addrlen = (int *)malloc(sizeof(int));
-    int addrlen = sizeof(fd_address);
+    int *addrlen = (int *)malloc(sizeof(int));
+    *addrlen = sizeof(fd_address);
     struct sockaddr_in *ptr_fd_addr = (struct sockaddr_in *)malloc(sizeof(struct sockaddr_in));
     *ptr_fd_addr = fd_address;
     pthread_t threads[100];
@@ -241,7 +241,7 @@ int lb(int lb_fd, struct sockaddr_in fd_address)
     {
         printf("here\n");
 
-        if ((client_new_soc[i] = accept(lb_fd, (struct sockaddr*)&fd_address,(socklen_t*)&addrlen)) < 0)
+        if ((client_new_soc[i] = accept(lb_fd, (struct sockaddr*)&fd_address,(socklen_t*)addrlen)) < 0)
         //if ((client_new_soc[i] = accept(lb_fd, (struct sockaddr *)ptr_fd_addr,
          //                            (socklen_t *)addrlen)) < 0)
         {
