@@ -102,7 +102,7 @@ int clients_connection(int *fd, struct sockaddr_in *fd_address)
 
 int server_to_client[3] = {-1, -1, -1};
 
-int scheduler(char *buffer)
+int scheduler(char *buffer, int *t)
 {
 
     int cur_time = time(NULL);
@@ -118,27 +118,33 @@ int scheduler(char *buffer)
         // server3 is available
         if (server_to_client[2] == -1)
         {
+            *t = time(NULL) + buffer[1] - '0';
             return 2;
         }
         // check if server3 time is less then the time to finish job
         if (server3_ttr <= buffer[1] - '0')
         {
             // wait until server3 finish
+            *t = time(NULL) + buffer[1] - '0';
             return 2;
         }
         if (server_to_client[0] == -1)
         {
+            *t = (time(NULL) + buffer[1] - '0') * 2;
             return 0;
         }
         if (server_to_client[1] == -1)
         {
+            *t = (time(NULL) + buffer[1] - '0') * 2;
             return 1;
         }
         if (server3_ttr <= (buffer[1] - '0') + server12_ttr)
         {
             // wait until server1/2 finish
+            *t = time(NULL) + buffer[1] - '0';
             return 2;
         }
+        *t = (time(NULL) + buffer[1] - '0') * 2;
         return  -server12;
         //return -MIN(server12_ttr, server3_ttr);
     }
@@ -147,11 +153,13 @@ int scheduler(char *buffer)
         // server1 is available
         if (server_to_client[0] == -1)
         {
+            *t = time(NULL) + buffer[1] - '0';
             return 0;
         }
         // server2 is available
         if (server_to_client[1] == -1)
         {
+            *t = time(NULL) + buffer[1] - '0';
             return 1;
         }
         // check if server1/2 time is less then the time to finish job
@@ -159,17 +167,21 @@ int scheduler(char *buffer)
         {
             // wait until server1/2 finish
             printf("server12 %d\n", server12);
+            *t = time(NULL) + buffer[1] - '0';
             return server12;
         }
         if (server_to_client[2] == -1)
         {
+            *t = (time(NULL) + buffer[1] - '0') * 3;
             return 2;
         }
         if (server12_ttr <= (buffer[1] - '0') + server3_ttr)
         {
             // wait until server1/2 finish
+            *t = time(NULL) + buffer[1] - '0';
             return server12;
         }
+        *t = (time(NULL) + buffer[1] - '0') * 3;
         return -2;
         //return -MIN(server12_ttr, server3_ttr);
     }
@@ -178,28 +190,34 @@ int scheduler(char *buffer)
         // server1 is available
         if (server_to_client[0] == -1)
         {
+            *t = time(NULL) + buffer[1] - '0';
             return 0;
         }
         // server2 is available
         if (server_to_client[1] == -1)
         {
+            *t = time(NULL) + buffer[1] - '0';
             return 1;
         }
         // check if server1/2 time is less then the time to finish job
         if (server12_ttr <= (buffer[1] - '0'))
         {
             // wait until server1/2 finish
+            *t = time(NULL) + buffer[1] - '0';
             return server12;
         }
         if (server_to_client[2] == -1)
         {
+            *t = (time(NULL) + buffer[1] - '0') * 2;
             return 2;
         }
         if (server12_ttr < (buffer[1] - '0') + server3_ttr)
         {
             // wait until server1/2 finish
+            *t = time(NULL) + buffer[1] - '0';
             return server12;
         }
+        *t = (time(NULL) + buffer[1] - '0') * 2;
         return -2;
         //return -MIN(server12_ttr, server3_ttr);
     }
@@ -220,12 +238,13 @@ void *client_handler(void *fd)
     int bytes_read = read(*((int *)fd), buffer, 1024);
     pthread_mutex_lock(&lock);
     int server_num;
-    if ((server_num = scheduler(buffer)) < 0)
+    int t;
+    if ((server_num = scheduler(buffer, &t)) < 0)
     {
         pthread_mutex_unlock(&lock);
         sleep(0.2);
         pthread_mutex_lock(&lock);
-        if ((server_num = scheduler(buffer)) < 0)
+        if ((server_num = scheduler(buffer, &t)) < 0)
         {
             server_num = -server_num;
             printf("%s : %x", buffer, server_num);
@@ -233,11 +252,11 @@ void *client_handler(void *fd)
     }
     if (server_to_client[server_num] == -1)
     {
-        server_to_client[server_num] = time(NULL) + buffer[1] - '0';
+        server_to_client[server_num] = t;
     }
     else
     {
-        server_to_client[server_num] += time(NULL) + buffer[1] - '0';
+        server_to_client[server_num] += t;
     }
     
     pthread_mutex_unlock(&lock);
