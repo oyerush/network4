@@ -233,7 +233,7 @@ int lb(int lb_fd, struct sockaddr_in fd_address)
     int addrlen = sizeof(fd_address);
     pthread_t threads[100];
     int i = 0;
-    int client_new_soc[100];
+    int *client_new_soc = (int *)malloc(100 * sizeof(int));
     while (1)
     {
         printf("here\n");
