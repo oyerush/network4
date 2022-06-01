@@ -7,6 +7,10 @@
 #include <unistd.h>
 #include <time.h>
 #include <list>
+#include <thread>
+#include <mutex>
+#include <algorithm>
+
 #include <fcntl.h> /* Added for the nonblocking socket */
 
 #define PORT 80
@@ -25,7 +29,7 @@ int servers_connection(int *fds)
     {
         int sock = 0, valread, client_fd;
         struct sockaddr_in serv_addr1;
-        struct sockaddr_in *serv_addr;
+        struct sockaddr_in *serv_addr = (struct sockaddr_in *)malloc(sizeof(struct sockaddr_in));
         *serv_addr = serv_addr1;
         if ((sock = socket(AF_INET, SOCK_STREAM, 0)) < 0)
         {
@@ -55,9 +59,9 @@ int clients_connection(int &fd, struct sockaddr_in &fd_address)
 {
     int server_fd, new_socket, valread;
     struct sockaddr_in address1;
-    struct sockaddr_in *address;
+    struct sockaddr_in *address = (struct sockaddr_in *)malloc(sizeof(struct sockaddr_in));
     *address = address1;
-    int *opt;
+    int *opt = (int *)malloc(sizeof(int));
     *opt = 1;
     // Creating socket file descriptor
     if ((server_fd = socket(AF_INET, SOCK_STREAM, 0)) == 0)
@@ -92,14 +96,7 @@ int clients_connection(int &fd, struct sockaddr_in &fd_address)
     return 0;
 }
 
-struct task
-{
-    int client_fd;
-    char buf[1024];
-};
 
-
-std::list<struct task> tasks_queue;
 int server_to_client[3][2] = {-1, -1};
 
 int scheduler(char *buffer)
@@ -112,6 +109,10 @@ int scheduler(char *buffer)
         return -1;
     }
     int cur_time;
+    int server1_ttr;
+    int server2_ttr;
+    int server3_ttr;
+    int server12_ttr;
     switch(buffer[0])
     {
         case 'M':
@@ -121,11 +122,12 @@ int scheduler(char *buffer)
             {
                 return 2;
             }
+            server3_ttr = server_to_client[2][0] - (time(NULL) - server_to_client[2][1]);
             // check if server3 time is less then the time to finish job
-            if (time(NULL) - server_to_client[2][1] < buffer[1] - '0')
+            if (server3_ttr < buffer[1] - '0')
             {
                 // wait until server3 finish
-                return -1;
+                return -server3_ttr;
             }
             if (server_to_client[0][0] == -1)
             {
@@ -146,12 +148,14 @@ int scheduler(char *buffer)
                 return 1;
             }
             cur_time = time(NULL);
+            server1_ttr = server_to_client[0][0] - (cur_time - server_to_client[0][1]);
+            server2_ttr = server_to_client[1][0] - (cur_time - server_to_client[1][1]);
+            server12_ttr = std::min(server1_ttr, server2_ttr);
             // check if server1/2 time is less then the time to finish job
-            if (cur_time - server_to_client[0][1] < 2 * (buffer[1] - '0') ||
-                cur_time - server_to_client[1][1] < 2 * (buffer[1] - '0'))
+            if (server12_ttr < 2 * (buffer[1] - '0'))
             {
                 // wait until server1/2 finish
-                return -1;
+                return -server12_ttr;
             }
             return 3;
         }
@@ -168,12 +172,15 @@ int scheduler(char *buffer)
                 return 1;
             }
             cur_time = time(NULL);
+            cur_time = time(NULL);
+            server1_ttr = server_to_client[0][0] - (cur_time - server_to_client[0][1]);
+            server2_ttr = server_to_client[1][0] - (cur_time - server_to_client[1][1]);
+            server12_ttr = std::min(server1_ttr, server2_ttr);
             // check if server1/2 time is less then the time to finish job
-            if (cur_time - server_to_client[0][1] < (buffer[1] - '0') ||
-                cur_time - server_to_client[1][1] < (buffer[1] - '0'))
+            if (server12_ttr < (buffer[1] - '0'))
             {
                 // wait until server1/2 finish
-                return -1;
+                return -server12_ttr;
             }
             return 3;
         }
@@ -185,126 +192,61 @@ int scheduler(char *buffer)
     return -1;
 }
 
-void queue_scheduler(int *changed)
+int servers_fds[3] = {-1, -1, -1};
+std::mutex mtx_sched;
+
+void *client_handler(void *fd)
 {
-    int finish = 0;
-    while ((changed[0] || changed[1]) && !finish)
+    char buffer[1024] = {0};
+    int bytes_read = read(*((int *)fd), buffer, 1024);
+    mtx_sched.lock();
+    int server_num;
+    while ((server_num = scheduler(buffer)) < 0)
     {
-        finish = 1;
-        for (std::list<struct task>::iterator it = tasks_queue.begin(); it != tasks_queue.end(); it++)
-        {
-            // search for the first not music task
-            if (it->buf[0] != 'M')
-            {
-                int server_num;
-                if ((server_num = scheduler(it->buf)) < 0)
-                {
-                    finish = 1;
-                    break;
-                }
-                server_to_client[server_num][0] = it->client_fd;
-                server_to_client[server_num][1] = time(NULL);
-                tasks_queue.erase(it);
-                changed[server_num] = 0;
-                finish = 0;
-                break;
-            }
-        }
+        mtx_sched.unlock();
+        sleep(-server_num);
+        mtx_sched.lock();
     }
-    finish = 0;
-    while (changed[2])
-    {
-        finish = 1;
-        for (std::list<struct task>::iterator it = tasks_queue.begin(); it != tasks_queue.end(); it++)
-        {
-            // search for the first not music task
-            if (it->buf[0] == 'M')
-            {
-                int server_num;
-                if ((server_num = scheduler(it->buf)) < 0)
-                {
-                    finish = 1;
-                    break;
-                }
-                server_to_client[server_num][0] = it->client_fd;
-                server_to_client[server_num][1] = time(NULL);
-                tasks_queue.erase(it);
-                changed[server_num] = 0;
-                finish = 0;
-                break;
-            }
-        }
-    }
-    for (std::list<struct task>::iterator it = tasks_queue.begin(); it != tasks_queue.end(); it++)
-    {
-        int server_num;
-        if ((server_num = scheduler(it->buf)) < 0)
-        {
-            continue;
-        }
-        server_to_client[server_num][0] = it->client_fd;
-        server_to_client[server_num][1] = time(NULL);
-        tasks_queue.erase(it);
-        changed[server_num] = 0;
-        return;
-    }
+    server_to_client[server_num][0] = buffer[1] - '0';
+    server_to_client[server_num][1] = time(NULL);
+    mtx_sched.unlock();
+    write(servers_fds[server_num], buffer, bytes_read);
+    bytes_read = read(servers_fds[server_num], buffer, 1024);
+    mtx_sched.lock();
+    server_to_client[server_num][0] = buffer[1] - '0';
+    server_to_client[server_num][1] = time(NULL);
+    mtx_sched.unlock();
+    write(*((int *)fd), buffer, bytes_read);
+    return fd;
 }
 
-
-int lb(int *servers_fds, int lb_fd, struct sockaddr_in fd_address)
+int lb(int lb_fd, struct sockaddr_in fd_address)
 {
 
-    int *addrlen;
+    int *addrlen = (int *)malloc(sizeof(int));
     *addrlen = sizeof(fd_address);
-    struct sockaddr_in *ptr_fd_addr;
+    struct sockaddr_in *ptr_fd_addr = (struct sockaddr_in *)malloc(sizeof(struct sockaddr_in));
     *ptr_fd_addr = fd_address;
-
+    pthread_t threads[100];
+    int i = 0;
     while (1)
     {
         char buffer[1024] = {0};
-        int client_new_soc;
-        // check (non-blocking) if servers done jobs
-        int changed[3] = {0};
-        for (int i = 0; i < NUM_OF_SERVERS; i++)
-        {
-            int bytes_read;
-            // pass answer form server to client
-            if ((bytes_read = read(servers_fds[i], buffer, 1024)) > 0)
-            {
-                // return the answer to the client
-                write(server_to_client[i][0], buffer, bytes_read);
-                changed[i] = 1;
-            }
-        }
-        if (changed && !tasks_queue.empty())
-        {
-            queue_scheduler(changed);
-        }
-        if ((client_new_soc = accept(lb_fd, (struct sockaddr *)ptr_fd_addr,
+        int *client_new_soc;
+        if ((*client_new_soc = accept(lb_fd, (struct sockaddr *)ptr_fd_addr,
                                      (socklen_t *)addrlen)) < 0)
         {
             // if there is no client try to connect
             continue;
         }
-        read(client_new_soc, buffer, 1024);
-        // sent to server and updated server_to_client
-        int server_num;
-        if ((server_num = scheduler(buffer)) < 0)
-        {
-            struct task *temp_task;
-            temp_task->client_fd = client_new_soc;
-            strcpy(temp_task->buf, buffer);
-            tasks_queue.push_back(*temp_task);
-            continue;
-        }
-        server_to_client[server_num][0] = client_new_soc;
-        server_to_client[server_num][1] = time(NULL);
+        pthread_create(threads + i, NULL, client_handler, (void *)client_new_soc);
+        i = (i+1)%100;
     }
 }
 
 int main()
 {
-    int servers_fds[3] = {-1, -1, -1};
+
     int lb_fd;
     struct sockaddr_in fd_address;
     // set up the lb 
@@ -318,5 +260,5 @@ int main()
     {
         return -1;
     }
-    lb(servers_fds, lb_fd, fd_address);
+    lb(lb_fd, fd_address);
 }
