@@ -126,14 +126,15 @@ int scheduler(char *buffer)
         if (server3_ttr < buffer[1] - '0')
         {
             // wait until server3 finish
+            servers_occupied[2] = 1;
             return -server3_ttr;
         }
-        if (server_to_client[0] == -1) // && !servers_occupied[0])
+        if (server_to_client[0] == -1 && !servers_occupied[0])
         {
             servers_occupied[0] = 0;
             return 0;
         }
-        if (server_to_client[1] == -1) // && !servers_occupied[1])
+        if (server_to_client[1] == -1 && !servers_occupied[1])
         {
             servers_occupied[1] = 0;
             return 1;
@@ -161,7 +162,7 @@ int scheduler(char *buffer)
             servers_occupied[server12] = 1;
             return -server12_ttr;
         }
-        if (server_to_client[2] == -1)// && !servers_occupied[2])
+        if (server_to_client[2] == -1 && !servers_occupied[2])
         {
             servers_occupied[2] = 0;
             return 2;
@@ -189,7 +190,7 @@ int scheduler(char *buffer)
             servers_occupied[server12] = 1;
             return -server12_ttr;
         }
-        if (server_to_client[2] == -1) // && !servers_occupied[2])
+        if (server_to_client[2] == -1 && !servers_occupied[2])
         {
             servers_occupied[2] = 0;
             return 2;
