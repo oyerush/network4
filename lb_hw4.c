@@ -223,11 +223,12 @@ void *client_handler(void *fd)
     if ((server_num = scheduler(buffer)) < 0)
     {
         pthread_mutex_unlock(&lock);
-        sleep(0.5);
+        sleep(0.2);
         pthread_mutex_lock(&lock);
         if ((server_num = scheduler(buffer)) < 0)
         {
             server_num = -server_num;
+            printf("%s : %x", buffer, server_num);
         }
     }
     if (server_to_client[server_num] == -1)
