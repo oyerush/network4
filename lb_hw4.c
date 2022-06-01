@@ -93,7 +93,7 @@ int clients_connection(int *fd, struct sockaddr_in *fd_address)
     return 0;
 }
 
-int server_to_client[3][2] = {-1, -1};
+int server_to_client[3][2] = {{-1, -1}};
 
 int scheduler(char *buffer)
 {
@@ -226,8 +226,8 @@ void *client_handler(void *fd)
     printf("f\n");
     pthread_mutex_lock(&lock);
     printf("l\n");
-    server_to_client[server_num][0] = buffer[1] - '0';
-    server_to_client[server_num][1] = time(NULL);
+    server_to_client[server_num][0] = -1;
+    server_to_client[server_num][1] = -1;
     pthread_mutex_unlock(&lock);
     printf("ul\n");
     write(*((int *)fd), buffer, bytes_read);    
