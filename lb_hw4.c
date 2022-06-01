@@ -268,6 +268,7 @@ void *client_handler(void *fd)
         server_to_client[server_num] = -1;
     pthread_mutex_unlock(&lock);
     close(*(int *)fd);
+    sleep(0.1);
     return fd;
 }
 
