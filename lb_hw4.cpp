@@ -91,6 +91,7 @@ int clients_connection(int &fd, struct sockaddr_in &fd_address)
     }
     fd = server_fd;
     fd_address = *address;
+    printf("finish client");
     return 0;
 }
 
@@ -231,8 +232,7 @@ int lb(int lb_fd, struct sockaddr_in fd_address)
     int client_new_soc[100];
     while (1)
     {
-        char buffer[1024] = {0};
-
+        printf("here\n");
         if ((client_new_soc[i] = accept(lb_fd, (struct sockaddr *)ptr_fd_addr,
                                      (socklen_t *)addrlen)) < 0)
         {
