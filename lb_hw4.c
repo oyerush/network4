@@ -242,7 +242,7 @@ void *client_handler(void *fd)
     if ((server_num = scheduler(buffer, &t)) < 0)
     {
         pthread_mutex_unlock(&lock);
-        sleep(1);
+        sleep(0.2);
         pthread_mutex_lock(&lock);
         if ((server_num = scheduler(buffer, &t)) < 0)
         {
