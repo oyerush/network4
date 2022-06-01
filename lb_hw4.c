@@ -22,25 +22,29 @@ int servers_connection(int *fds)
     for (int i = 0; i < NUM_OF_SERVERS; i++)
     {
         int sock = 0, valread, client_fd;
-        struct sockaddr_in serv_addr1;
-        struct sockaddr_in *serv_addr = (struct sockaddr_in *)malloc(sizeof(struct sockaddr_in));
-        *serv_addr = serv_addr1;
+        struct sockaddr_in serv_addr;
+        char *hello = "Hello from client";
+        char buffer[1024] = {0};
         if ((sock = socket(AF_INET, SOCK_STREAM, 0)) < 0)
         {
             printf("\n Socket creation error \n");
             return -1;
         }
-        serv_addr->sin_family = AF_INET;
-        serv_addr->sin_port = htons(PORT);
-        struct in_addr *sin_addr = (struct in_addr *)malloc(sizeof(struct in_addr));
-        *sin_addr = serv_addr->sin_addr;
-        if (inet_pton(AF_INET, address[i], sin_addr) <= 0)
+
+        serv_addr.sin_family = AF_INET;
+        serv_addr.sin_port = htons(PORT);
+
+        // Convert IPv4 and IPv6 addresses from text to binary
+        // form
+        if (inet_pton(AF_INET, address[i], &serv_addr.sin_addr) <= 0)
         {
-            printf("\nInvalid address/ Address not supported \n");
+            printf(
+                "\nInvalid address/ Address not supported \n");
             return -1;
         }
-        serv_addr->sin_addr = *sin_addr;
-        if ((fds[i] = connect(sock, (struct sockaddr *)serv_addr, sizeof(*serv_addr))) < 0)
+
+        if ((fds[i] = connect(sock, (struct sockaddr *)&serv_addr,
+                              sizeof(serv_addr))) < 0)
         {
             printf("\nConnection Failed \n");
             return -1;
@@ -219,7 +223,7 @@ void *client_handler(void *fd)
     server_to_client[server_num][0] = buffer[1] - '0';
     server_to_client[server_num][1] = time(NULL);
     pthread_mutex_unlock(&lock);
-    printf("w\n");
+    printf("w %d\n", servers_fds[server_num]);
     write(servers_fds[server_num], buffer, bytes_read);
     printf("r\n");
     bytes_read = read(servers_fds[server_num], buffer, 1024);
