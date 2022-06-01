@@ -113,6 +113,7 @@ int scheduler(char *buffer)
     {
     case 'M':
     {
+        printf("\nM\n");
         // server3 is available
         if (server_to_client[2][0] == -1)
         {
@@ -133,6 +134,7 @@ int scheduler(char *buffer)
     }
     case 'V':
     {
+        printf("\nV\n");
         // server1 is available
         if (server_to_client[0][0] == -1)
         {
@@ -157,6 +159,7 @@ int scheduler(char *buffer)
     }
     case 'P':
     {
+        printf("\nP\n");
         // server1 is available
         if (server_to_client[0][0] == -1)
         {
@@ -220,7 +223,7 @@ void *client_handler(void *fd)
     server_to_client[server_num][1] = time(NULL);
     pthread_mutex_unlock(&lock);
     printf("ul\n");
-    write(*((int *)fd), buffer, bytes_read);
+    write(*((int *)fd), buffer, bytes_read);    
     return fd;
 }
 
