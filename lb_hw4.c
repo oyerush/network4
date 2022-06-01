@@ -96,7 +96,6 @@ int clients_connection(int *fd, struct sockaddr_in *fd_address)
     }
     *fd = server_fd;
     *fd_address = address;
-    printf("finish client");
     return 0;
 }
 
@@ -120,35 +119,26 @@ int scheduler(char *buffer)
     {
     case 'M':
     {
-        printf("\nM - %d -\n", server_to_client[2][0]);
         // server3 is available
         if (server_to_client[2][0] == -1)
         {
-            printf("\n-M-2-\n");
             return 2;
         }
-        printf("\n-M-A-\n");
         server3_ttr = server_to_client[2][0] - (time(NULL) - server_to_client[2][1]);
-        printf("\n-M-B-\n");
         // check if server3 time is less then the time to finish job
         if (server3_ttr < buffer[1] - '0')
         {
-            printf("\n-M-C %d-\n", server3_ttr);
             // wait until server3 finish
             return -server3_ttr;
         }
-        printf("\n-M-D-\n");
         if (server_to_client[0][0] == -1)
         {
-            printf("\n-M-0-\n");
             return 0;
         }
-        printf("\n-M-1-\n");
         return 1;
     }
     case 'V':
     {
-        printf("\nV\n");
         // server1 is available
         if (server_to_client[0][0] == -1)
         {
@@ -173,7 +163,6 @@ int scheduler(char *buffer)
     }
     case 'P':
     {
-        printf("\nP\n");
         // server1 is available
         if (server_to_client[0][0] == -1)
         {
@@ -214,30 +203,23 @@ void *client_handler(void *fd)
     int bytes_read = read(*((int *)fd), buffer, 1024);
     pthread_mutex_lock(&lock);
     int server_num;
-    printf("buf: %s", buffer);
     while ((server_num = scheduler(buffer)) < 0)
     {
-        printf("not %d", server_num);
         pthread_mutex_unlock(&lock);
         sleep(-server_num);
         pthread_mutex_lock(&lock);
     }
-    printf("yes %d", server_num);
     server_to_client[server_num][0] = buffer[1] - '0';
     server_to_client[server_num][1] = time(NULL);
     pthread_mutex_unlock(&lock);
-    printf("w %d %d %d \n", servers_fds[0], servers_fds[1], servers_fds[2]);
     write(servers_fds[server_num], buffer, bytes_read);
-    printf("r\n");
     bytes_read = read(servers_fds[server_num], buffer, 1024);
-    printf("f\n");
+    write(*((int *)fd), buffer, bytes_read);    
     pthread_mutex_lock(&lock);
     printf("l\n");
     server_to_client[server_num][0] = -1;
     server_to_client[server_num][1] = -1;
     pthread_mutex_unlock(&lock);
-    printf("ul\n");
-    write(*((int *)fd), buffer, bytes_read);    
     close(*(int *)fd);
     return fd;
 }
@@ -253,7 +235,6 @@ int lb(int lb_fd, struct sockaddr_in fd_address)
     *ptr_client = client_new_soc;
     while (1)
     {
-        printf("here\n");
         struct sockaddr_in tmp_address = fd_address;
         int tmp_addrlen = addrlen;
         if ((client_new_soc[i] = accept(lb_fd, (struct sockaddr *)&tmp_address, (socklen_t *)&tmp_addrlen)) < 0)
