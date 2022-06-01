@@ -9,6 +9,7 @@
 #include <pthread.h>
 
 #define MIN(a, b) (((a) < (b)) ? (a) : (b))
+#define MAX(a, b) (((a) > (b)) ? (a) : (b))
 #define PORT 80
 #define NUM_OF_SERVERS 3
 
@@ -105,9 +106,9 @@ int scheduler(char *buffer)
 {
 
     int cur_time = time(NULL);
-    int server1_ttr = server_to_client[0] - cur_time;
-    int server2_ttr = server_to_client[1] - cur_time;
-    int server3_ttr = server_to_client[2] - cur_time;
+    int server1_ttr = MAX(server_to_client[0] - cur_time, 1);
+    int server2_ttr = MAX(server_to_client[1] - cur_time, 1);
+    int server3_ttr = MAX(server_to_client[2] - cur_time, 1);
     int server12_ttr = MIN(server1_ttr, server2_ttr);
     switch (buffer[0])
     {
