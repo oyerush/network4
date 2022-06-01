@@ -118,33 +118,33 @@ int scheduler(char *buffer, int *t)
         // server3 is available
         if (server_to_client[2] == -1)
         {
-            *t = time(NULL) + buffer[1] - '0';
+            *t = buffer[1] - '0';
             return 2;
         }
         // check if server3 time is less then the time to finish job
         if (server3_ttr <= buffer[1] - '0')
         {
             // wait until server3 finish
-            *t = time(NULL) + buffer[1] - '0';
+            *t = buffer[1] - '0';
             return 2;
         }
         if (server_to_client[0] == -1)
         {
-            *t = (time(NULL) + buffer[1] - '0') * 2;
+            *t = (buffer[1] - '0') * 2;
             return 0;
         }
         if (server_to_client[1] == -1)
         {
-            *t = (time(NULL) + buffer[1] - '0') * 2;
+            *t = (buffer[1] - '0') * 2;
             return 1;
         }
         if (server3_ttr <= (buffer[1] - '0') + server12_ttr)
         {
             // wait until server1/2 finish
-            *t = time(NULL) + buffer[1] - '0';
+            *t = buffer[1] - '0';
             return 2;
         }
-        *t = (time(NULL) + buffer[1] - '0') * 2;
+        *t =  (buffer[1] - '0') * 2;
         return  -server12;
         //return -MIN(server12_ttr, server3_ttr);
     }
@@ -153,13 +153,13 @@ int scheduler(char *buffer, int *t)
         // server1 is available
         if (server_to_client[0] == -1)
         {
-            *t = time(NULL) + buffer[1] - '0';
+            *t = buffer[1] - '0';
             return 0;
         }
         // server2 is available
         if (server_to_client[1] == -1)
         {
-            *t = time(NULL) + buffer[1] - '0';
+            *t = buffer[1] - '0';
             return 1;
         }
         // check if server1/2 time is less then the time to finish job
@@ -167,21 +167,21 @@ int scheduler(char *buffer, int *t)
         {
             // wait until server1/2 finish
             printf("server12 %d\n", server12);
-            *t = time(NULL) + buffer[1] - '0';
+            *t = buffer[1] - '0';
             return server12;
         }
         if (server_to_client[2] == -1)
         {
-            *t = (time(NULL) + buffer[1] - '0') * 3;
+            *t = (buffer[1] - '0')* 3;
             return 2;
         }
         if (server12_ttr <= (buffer[1] - '0') + server3_ttr)
         {
             // wait until server1/2 finish
-            *t = time(NULL) + buffer[1] - '0';
+            *t = buffer[1] - '0';
             return server12;
         }
-        *t = (time(NULL) + buffer[1] - '0') * 3;
+        *t = (buffer[1] - '0') * 3;
         return -2;
         //return -MIN(server12_ttr, server3_ttr);
     }
@@ -190,34 +190,34 @@ int scheduler(char *buffer, int *t)
         // server1 is available
         if (server_to_client[0] == -1)
         {
-            *t = time(NULL) + buffer[1] - '0';
+            *t = buffer[1] - '0';
             return 0;
         }
         // server2 is available
         if (server_to_client[1] == -1)
         {
-            *t = time(NULL) + buffer[1] - '0';
+            *t = buffer[1] - '0';
             return 1;
         }
         // check if server1/2 time is less then the time to finish job
         if (server12_ttr <= (buffer[1] - '0'))
         {
             // wait until server1/2 finish
-            *t = time(NULL) + buffer[1] - '0';
+            *t = buffer[1] - '0';
             return server12;
         }
         if (server_to_client[2] == -1)
         {
-            *t = (time(NULL) + buffer[1] - '0') * 2;
+            *t = (buffer[1] - '0') * 2;
             return 2;
         }
         if (server12_ttr < (buffer[1] - '0') + server3_ttr)
         {
             // wait until server1/2 finish
-            *t = time(NULL) + buffer[1] - '0';
+            *t = buffer[1] - '0';
             return server12;
         }
-        *t = (time(NULL) + buffer[1] - '0') * 2;
+        *t = (buffer[1] - '0') * 2;
         return -2;
         //return -MIN(server12_ttr, server3_ttr);
     }
