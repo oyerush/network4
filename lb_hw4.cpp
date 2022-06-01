@@ -212,12 +212,17 @@ void *client_handler(void *fd)
     server_to_client[server_num][0] = buffer[1] - '0';
     server_to_client[server_num][1] = time(NULL);
     mtx_sched.unlock();
+    printf("w\n");
     write(servers_fds[server_num], buffer, bytes_read);
+    printf("r\n");
     bytes_read = read(servers_fds[server_num], buffer, 1024);
+    printf("f\n");
     mtx_sched.lock();
+    printf("l\n");
     server_to_client[server_num][0] = buffer[1] - '0';
     server_to_client[server_num][1] = time(NULL);
     mtx_sched.unlock();
+    printf("ul\n");
     write(*((int *)fd), buffer, bytes_read);
     return fd;
 }
