@@ -228,17 +228,19 @@ int lb(int lb_fd, struct sockaddr_in fd_address)
     *ptr_fd_addr = fd_address;
     pthread_t threads[100];
     int i = 0;
+    int client_new_soc[100];
     while (1)
     {
         char buffer[1024] = {0};
-        int *client_new_soc = (int *)malloc(sizeof(int));
-        if ((*client_new_soc = accept(lb_fd, (struct sockaddr *)ptr_fd_addr,
+
+        if ((client_new_soc[i] = accept(lb_fd, (struct sockaddr *)ptr_fd_addr,
                                      (socklen_t *)addrlen)) < 0)
         {
             // if there is no client try to connect
+            printf("con err\n");
             continue;
         }
-        pthread_create(threads + i, NULL, client_handler, (void *)client_new_soc);
+        pthread_create(threads + i, NULL, client_handler, (void *)(client_new_soc + i));
         i = (i+1)%100;
     }
 }
