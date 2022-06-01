@@ -99,92 +99,80 @@ int clients_connection(int *fd, struct sockaddr_in *fd_address)
     return 0;
 }
 
-int server_to_client[3][2] = {{-1, -1}, {-1, -1}, {-1, -1}};
+int server_to_client[3] = {-1, -1, -1};
 
 int scheduler(char *buffer)
 {
-    // check if there is no available server
-    if (server_to_client[0][0] != -1 &&
-        server_to_client[1][0] != -1 &&
-        server_to_client[2][0] != -1)
-    {
-        return -1;
-    }
-    int cur_time;
-    int server1_ttr;
-    int server2_ttr;
-    int server3_ttr;
-    int server12_ttr;
+
+    int cur_time = time(NULL);
+    int server1_ttr = server_to_client[0] - cur_time;
+    int server2_ttr = server_to_client[1] - cur_time;
+    int server3_ttr = server_to_client[2] - cur_time;
+    int server12_ttr = MIN(server1_ttr, server2_ttr);
     switch (buffer[0])
     {
     case 'M':
     {
         // server3 is available
-        if (server_to_client[2][0] == -1)
+        if (server_to_client[2] == -1)
         {
             return 2;
         }
-        server3_ttr = server_to_client[2][0] - (time(NULL) - server_to_client[2][1]);
         // check if server3 time is less then the time to finish job
         if (server3_ttr < buffer[1] - '0')
         {
             // wait until server3 finish
             return -server3_ttr;
         }
-        if (server_to_client[0][0] == -1)
+        if (server_to_client[0] == -1)
         {
             return 0;
         }
-        return 1;
+        if (server_to_client[0] == -1)
+        {
+            return 1;
+        }
+        return -MIN(server12_ttr, server3_ttr);
     }
     case 'V':
     {
         // server1 is available
-        if (server_to_client[0][0] == -1)
+        if (server_to_client[0] == -1)
         {
             return 0;
         }
         // server2 is available
-        if (server_to_client[1][0] == -1)
+        if (server_to_client[1] == -1)
         {
             return 1;
         }
-        cur_time = time(NULL);
-        server1_ttr = server_to_client[0][0] - (cur_time - server_to_client[0][1]);
-        server2_ttr = server_to_client[1][0] - (cur_time - server_to_client[1][1]);
-        server12_ttr = MIN(server1_ttr, server2_ttr);
         // check if server1/2 time is less then the time to finish job
         if (server12_ttr < 2 * (buffer[1] - '0'))
         {
             // wait until server1/2 finish
             return -server12_ttr;
         }
-        return 3;
+        return -MIN(server12_ttr, server3_ttr);
     }
     case 'P':
     {
         // server1 is available
-        if (server_to_client[0][0] == -1)
+        if (server_to_client[0] == -1)
         {
             return 0;
         }
         // server2 is available
-        if (server_to_client[1][0] == -1)
+        if (server_to_client[1] == -1)
         {
             return 1;
         }
-        cur_time = time(NULL);
-        cur_time = time(NULL);
-        server1_ttr = server_to_client[0][0] - (cur_time - server_to_client[0][1]);
-        server2_ttr = server_to_client[1][0] - (cur_time - server_to_client[1][1]);
-        server12_ttr = MIN(server1_ttr, server2_ttr);
         // check if server1/2 time is less then the time to finish job
         if (server12_ttr < (buffer[1] - '0'))
         {
             // wait until server1/2 finish
             return -server12_ttr;
         }
-        return 3;
+        return -MIN(server12_ttr, server3_ttr);
     }
         //        default:
         //            printf("req error");
@@ -209,16 +197,14 @@ void *client_handler(void *fd)
         sleep(-server_num);
         pthread_mutex_lock(&lock);
     }
-    server_to_client[server_num][0] = buffer[1] - '0';
-    server_to_client[server_num][1] = time(NULL);
+    server_to_client[server_num] = time(NULL) + buffer[1] - '0';
     pthread_mutex_unlock(&lock);
     write(servers_fds[server_num], buffer, bytes_read);
     bytes_read = read(servers_fds[server_num], buffer, 1024);
     write(*((int *)fd), buffer, bytes_read);    
     pthread_mutex_lock(&lock);
     printf("l\n");
-    server_to_client[server_num][0] = -1;
-    server_to_client[server_num][1] = -1;
+    server_to_client[server_num] = -1;
     pthread_mutex_unlock(&lock);
     close(*(int *)fd);
     return fd;
