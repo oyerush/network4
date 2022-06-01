@@ -11,7 +11,6 @@
 #include <mutex>
 #include <algorithm>
 
-#include <fcntl.h> /* Added for the nonblocking socket */
 
 #define PORT 80
 #define NUM_OF_SERVERS 3
@@ -46,12 +45,11 @@ int servers_connection(int *fds)
             return -1;
         }
         serv_addr->sin_addr = *sin_addr;
-        if ((fds[i] = connect(sock, (struct sockaddr *)serv_addr, sizeof(serv_addr))) < 0)
+        if ((fds[i] = connect(sock, (struct sockaddr *)serv_addr, sizeof(*serv_addr))) < 0)
         {
             printf("\nConnection Failed \n");
             return -1;
         }
-        fcntl(fds[i], F_SETFL, O_NONBLOCK);
     }
     return 0;
 }
@@ -92,7 +90,6 @@ int clients_connection(int &fd, struct sockaddr_in &fd_address)
         return -1;
     }
     fd = server_fd;
-    fcntl(fd, F_SETFL, O_NONBLOCK);
     fd_address = *address;
     return 0;
 }
