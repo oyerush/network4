@@ -123,7 +123,7 @@ int scheduler(char *buffer)
             return 2;
         }
         // check if server3 time is less then the time to finish job
-        if (server3_ttr < buffer[1] - '0')
+        if (server3_ttr < buffer[1] - '0' && !servers_occupied[2])
         {
             // wait until server3 finish
             servers_occupied[2] = 1;
@@ -156,7 +156,7 @@ int scheduler(char *buffer)
             return 1;
         }
         // check if server1/2 time is less then the time to finish job
-        if (server12_ttr < 2 * (buffer[1] - '0'))
+        if (server12_ttr < 2 * (buffer[1] - '0') && !servers_occupied[server12])
         {
             // wait until server1/2 finish
             servers_occupied[server12] = 1;
@@ -184,7 +184,7 @@ int scheduler(char *buffer)
             return 1;
         }
         // check if server1/2 time is less then the time to finish job
-        if (server12_ttr < (buffer[1] - '0'))
+        if (server12_ttr < (buffer[1] - '0') && !servers_occupied[server12])
         {
             // wait until server1/2 finish
             servers_occupied[server12] = 1;
