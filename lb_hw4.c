@@ -152,6 +152,7 @@ int scheduler(char *buffer)
         if (server12_ttr < 2 * (buffer[1] - '0'))
         {
             // wait until server1/2 finish
+            printf("server12 %d\n", server12);
             return server12;
         }
         if (server_to_client[2] == -1)
