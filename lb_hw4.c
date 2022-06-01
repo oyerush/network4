@@ -249,7 +249,7 @@ int lb(int lb_fd, struct sockaddr_in fd_address)
             printf("con err\n");
             continue;
         }
-        pthread_create(threads + i, NULL, client_handler, (void *)(*ptr_client + i));
+        pthread_create(threads + i, NULL, client_handler, (void *)(&client_new_soc[i]));
         i = (i + 1) % 100;
     }
 }
