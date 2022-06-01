@@ -12,7 +12,9 @@
 #define PORT 80
 #define NUM_OF_SERVERS 3
 
-int servers_connection(int *fds)
+int servers_fds[3] = {-1, -1, -1};
+
+int servers_connection()
 {
     const char *address[] =
         {
@@ -43,8 +45,8 @@ int servers_connection(int *fds)
             return -1;
         }
 
-        if ((fds[i] = connect(sock, (struct sockaddr *)&serv_addr,
-                              sizeof(serv_addr))) < 0)
+        if ((servers_fds[i] = connect(sock, (struct sockaddr *)&serv_addr,
+                                      sizeof(serv_addr))) < 0)
         {
             printf("\nConnection Failed \n");
             return -1;
@@ -202,7 +204,7 @@ int scheduler(char *buffer)
     return -1;
 }
 
-int servers_fds[3] = {-1, -1, -1};
+
 pthread_mutex_t lock;
 
 void *client_handler(void *fd)
@@ -272,7 +274,7 @@ int main()
     struct sockaddr_in *fd_address = (struct sockaddr_in *)malloc(sizeof(struct sockaddr_in));
     // set up the lb
     // set up connection with servers
-    if (servers_connection((int *)servers_fds) < 0)
+    if (servers_connection() < 0)
     {
         return -1;
     }
