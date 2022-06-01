@@ -199,6 +199,7 @@ void *client_handler(void *fd)
     int bytes_read = read(*((int *)fd), buffer, 1024);
     mtx_sched.lock();
     int server_num;
+    printf("buf: %s", buffer);
     while ((server_num = scheduler(buffer)) < 0)
     {
         mtx_sched.unlock();
