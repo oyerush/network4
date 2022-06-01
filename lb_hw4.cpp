@@ -45,6 +45,7 @@ int servers_connection(int *fds)
             printf("\nInvalid address/ Address not supported \n");
             return -1;
         }
+        serv_addr->sin_addr = *sin_addr;
         if ((fds[i] = connect(sock, (struct sockaddr *)serv_addr, sizeof(serv_addr))) < 0)
         {
             printf("\nConnection Failed \n");
