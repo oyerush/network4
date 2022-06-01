@@ -123,7 +123,7 @@ int scheduler(char *buffer)
         if (server3_ttr < buffer[1] - '0')
         {
             // wait until server3 finish
-            return -server3_ttr;
+            //return -server3_ttr;
         }
         if (server_to_client[0] == -1)
         {
@@ -151,7 +151,7 @@ int scheduler(char *buffer)
         if (server12_ttr < 2 * (buffer[1] - '0'))
         {
             // wait until server1/2 finish
-            return -server12_ttr;
+            //return -server12_ttr;
         }
         if (server_to_client[2] == -1)
         {
@@ -175,7 +175,7 @@ int scheduler(char *buffer)
         if (server12_ttr < (buffer[1] - '0'))
         {
             // wait until server1/2 finish
-            return -server12_ttr;
+            //return -server12_ttr;
         }
         if (server_to_client[2] == -1)
         {
@@ -212,7 +212,6 @@ void *client_handler(void *fd)
     bytes_read = read(servers_fds[server_num], buffer, 1024);
     write(*((int *)fd), buffer, bytes_read);    
     pthread_mutex_lock(&lock);
-    printf("l\n");
     server_to_client[server_num] = -1;
     pthread_mutex_unlock(&lock);
     close(*(int *)fd);
