@@ -234,6 +234,8 @@ int lb(int lb_fd, struct sockaddr_in fd_address)
     pthread_t threads[100];
     int i = 0;
     int *client_new_soc = (int *)malloc(100 * sizeof(int));
+    int **ptr_client =  (int **)malloc(sizeof(int *));
+    *ptr_client = client_new_soc;
     while (1)
     {
         printf("here\n");
@@ -247,7 +249,7 @@ int lb(int lb_fd, struct sockaddr_in fd_address)
             printf("con err\n");
             continue;
         }
-        pthread_create(threads + i, NULL, client_handler, (void *)(client_new_soc + i));
+        pthread_create(threads + i, NULL, client_handler, (void *)(*ptr_client + i));
         i = (i + 1) % 100;
     }
 }
