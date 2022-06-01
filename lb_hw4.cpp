@@ -203,10 +203,12 @@ void *client_handler(void *fd)
     printf("buf: %s", buffer);
     while ((server_num = scheduler(buffer)) < 0)
     {
+        printf("not %d", server_num);
         mtx_sched.unlock();
         sleep(-server_num);
         mtx_sched.lock();
     }
+    printf("yes %d", server_num);
     server_to_client[server_num][0] = buffer[1] - '0';
     server_to_client[server_num][1] = time(NULL);
     mtx_sched.unlock();
