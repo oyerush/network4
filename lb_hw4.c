@@ -234,8 +234,9 @@ int lb(int lb_fd, struct sockaddr_in fd_address)
     while (1)
     {
         printf("here\n");
-
-        if ((client_new_soc[i] = accept(lb_fd, (struct sockaddr *)&fd_address, (socklen_t *)&addrlen)) < 0)
+        struct sockaddr_in tmp_address = fd_address;
+        int tmp_addrlen = addrlen;
+        if ((client_new_soc[i] = accept(lb_fd, (struct sockaddr *)&tmp_address, (socklen_t *)&tmp_addrlen)) < 0)
         // if ((client_new_soc[i] = accept(lb_fd, (struct sockaddr *)ptr_fd_addr,
         //                             (socklen_t *)addrlen)) < 0)
         {
