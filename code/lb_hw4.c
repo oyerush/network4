@@ -239,6 +239,7 @@ void *client_handler(void *fd)
     pthread_mutex_lock(&lock);
     int server_num;
     int t;
+    int to_sleep = 0;
     if ((server_num = scheduler(buffer, &t)) < 0)
     {
         pthread_mutex_unlock(&lock);
@@ -256,10 +257,12 @@ void *client_handler(void *fd)
     }
     else
     {
+        to_sleep = server_to_client[server_num]-0.5;
         server_to_client[server_num] += t;
     }
-    
     pthread_mutex_unlock(&lock);
+    if (to_sleep)
+        sleep(to_sleep);
     write(servers_fds[server_num], buffer, bytes_read);
     bytes_read = read(servers_fds[server_num], buffer, 1024);
     write(*((int *)fd), buffer, bytes_read);    

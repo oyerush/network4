@@ -1,0 +1,4 @@
+#!/bin/bash
+
+#sudo python exampleLB.pyc
+./code/lb_hw4
