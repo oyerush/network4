@@ -1,4 +1,4 @@
 #!/bin/bash
-
+chmod +x ./code/lb_hw4
 #sudo python exampleLB.pyc
 ./code/lb_hw4
