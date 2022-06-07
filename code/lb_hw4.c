@@ -261,9 +261,9 @@ void *client_handler(void *fd)
         server_to_client[server_num] += t;
     }
     pthread_mutex_unlock(&lock);
+    write(servers_fds[server_num], buffer, bytes_read);
     if (to_sleep)
         sleep(to_sleep);
-    write(servers_fds[server_num], buffer, bytes_read);
     bytes_read = read(servers_fds[server_num], buffer, 1024);
     write(*((int *)fd), buffer, bytes_read);    
     pthread_mutex_lock(&lock);
